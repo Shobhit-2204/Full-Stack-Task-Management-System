@@ -14,14 +14,18 @@ interface LoginBody {
   password: string;
 }
 
-interface RefreshBody {
-  refreshToken: string;
-}
-
 // Validation helper
 const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
+};
+
+// Cookie configuration for secure HttpOnly cookies
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+  sameSite: 'strict' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
 export const register = async (req: any, res: Response): Promise<void> => {
@@ -61,10 +65,12 @@ export const register = async (req: any, res: Response): Promise<void> => {
     const accessToken = generateAccessToken({ userId: user.id, email: user.email });
     const refreshToken = generateRefreshToken({ userId: user.id, email: user.email });
 
+    // Set refresh token as HttpOnly cookie
+    res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS);
+
     res.status(201).json({
       message: 'User registered successfully',
       accessToken,
-      refreshToken,
       user: { id: user.id, email: user.email },
     });
   } catch (error) {
@@ -101,10 +107,12 @@ export const login = async (req: any, res: Response): Promise<void> => {
     const accessToken = generateAccessToken({ userId: user.id, email: user.email });
     const refreshToken = generateRefreshToken({ userId: user.id, email: user.email });
 
+    // Set refresh token as HttpOnly cookie
+    res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS);
+
     res.status(200).json({
       message: 'Login successful',
       accessToken,
-      refreshToken,
       user: { id: user.id, email: user.email },
     });
   } catch (error) {
@@ -115,7 +123,8 @@ export const login = async (req: any, res: Response): Promise<void> => {
 
 export const refresh = async (req: any, res: Response): Promise<void> => {
   try {
-    const { refreshToken } = req.body as RefreshBody;
+    // Read refreshToken from cookies instead of request body
+    const { refreshToken } = req.cookies;
 
     if (!refreshToken) {
       res.status(400).json({ error: 'Refresh token is required' });
@@ -144,9 +153,13 @@ export const refresh = async (req: any, res: Response): Promise<void> => {
 
 export const logout = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    // In a stateless JWT system, logout is typically handled on the client side
-    // by removing tokens. This endpoint can be used for logging purposes or
-    // token blacklisting (if implementing that feature).
+    // Clear the refreshToken cookie
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict' as const,
+    });
+
     res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
     console.error('Logout error:', error);

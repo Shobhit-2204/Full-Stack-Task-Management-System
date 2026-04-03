@@ -4,35 +4,34 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 interface Tokens {
   accessToken: string | null;
-  refreshToken: string | null;
 }
 
-// Create axios instance
+// Create axios instance with credentials
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Enable cookies to be sent with requests
 });
 
-// Token management
+// Token management - only accessToken in storage, refreshToken in HttpOnly cookie
 export const getTokens = (): Tokens => {
-  if (typeof window === 'undefined') return { accessToken: null, refreshToken: null };
+  if (typeof window === 'undefined') return { accessToken: null };
   
   return {
     accessToken: localStorage.getItem('accessToken'),
-    refreshToken: localStorage.getItem('refreshToken'),
   };
 };
 
-export const setTokens = (accessToken: string, refreshToken: string): void => {
+export const setTokens = (accessToken: string): void => {
   localStorage.setItem('accessToken', accessToken);
-  localStorage.setItem('refreshToken', refreshToken);
+  // refreshToken is automatically handled as HttpOnly cookie by the server
 };
 
 export const clearTokens = (): void => {
   localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+  // HttpOnly cookie is automatically cleared by the server on logout
 };
 
 // Request interceptor
@@ -81,19 +80,13 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { refreshToken } = getTokens();
-        if (!refreshToken) {
-          clearTokens();
-          window.location.href = '/login';
-          return Promise.reject(error);
-        }
-
-        const response = await axios.post(`${API_URL}/auth/refresh`, {
-          refreshToken,
+        // No need to pass refreshToken - it's in the HttpOnly cookie
+        const response = await axios.post(`${API_URL}/auth/refresh`, {}, {
+          withCredentials: true, // Enable cookies
         });
 
         const { accessToken: newAccessToken } = response.data;
-        setTokens(newAccessToken, refreshToken);
+        setTokens(newAccessToken);
 
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         processQueue(null);

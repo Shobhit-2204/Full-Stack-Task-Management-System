@@ -3,7 +3,7 @@
 import { useEffect, useState, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { getTasks, createTask, logoutUser, deleteTask, toggleTaskStatus } from '@/lib/api';
+import { getTasks, createTask, updateTask, logoutUser, deleteTask, toggleTaskStatus } from '@/lib/api';
 import { getTokens } from '@/lib/apiClient';
 import TaskCard from '@/components/TaskCard';
 import TaskForm from '@/components/TaskForm';
@@ -58,17 +58,29 @@ export default function DashboardPage() {
 
   const handleCreateTask = async (title: string, description: string) => {
     try {
-      await createTask({ title, description });
-      toast.success('Task created successfully');
+      if (editingTask) {
+        // Update existing task
+        const response = await updateTask(editingTask.id, { title, description });
+        // Optimistic update: update the task in the local state
+        setTasks(tasks.map(t => t.id === editingTask.id ? response.task : t));
+        toast.success('Task updated successfully');
+      } else {
+        // Create new task
+        const response = await createTask({ title, description });
+        // Optimistic update: prepend the new task to the list
+        setTasks([response.task, ...tasks]);
+        toast.success('Task created successfully');
+      }
       setShowForm(false);
-      setPage(1);
-      // Refetch tasks
-      const data = await getTasks(1, 10, statusFilter || undefined, search || undefined);
-      setTasks(data.tasks);
-      setTotalPages(data.pagination.pages);
+      setEditingTask(null);
     } catch (error) {
-      toast.error('Failed to create task');
+      toast.error(editingTask ? 'Failed to update task' : 'Failed to create task');
     }
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setShowForm(true);
   };
 
   const handleDeleteTask = async (taskId: number) => {
@@ -152,8 +164,12 @@ export default function DashboardPage() {
 
           <button
             onClick={() => {
-              setEditingTask(null);
-              setShowForm(!showForm);
+              if (showForm) {
+                setEditingTask(null);
+                setShowForm(false);
+              } else {
+                setShowForm(true);
+              }
             }}
             className="w-full md:w-auto btn btn-primary"
           >
@@ -189,6 +205,7 @@ export default function DashboardPage() {
                   task={task}
                   onDelete={handleDeleteTask}
                   onToggle={handleToggleTask}
+                  onEdit={handleEditTask}
                 />
               ))}
             </div>

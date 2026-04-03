@@ -12,7 +12,6 @@ interface LoginPayload {
 
 interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
   user: { id: number; email: string };
 }
 
@@ -39,15 +38,15 @@ interface TasksResponse {
 // Auth APIs
 export const registerUser = async (data: RegisterPayload): Promise<AuthResponse> => {
   const response = await apiClient.post('/auth/register', data);
-  const { accessToken, refreshToken } = response.data;
-  setTokens(accessToken, refreshToken);
+  const { accessToken } = response.data;
+  setTokens(accessToken);
   return response.data;
 };
 
 export const loginUser = async (data: LoginPayload): Promise<AuthResponse> => {
   const response = await apiClient.post('/auth/login', data);
-  const { accessToken, refreshToken } = response.data;
-  setTokens(accessToken, refreshToken);
+  const { accessToken } = response.data;
+  setTokens(accessToken);
   return response.data;
 };
 

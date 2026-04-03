@@ -14,9 +14,10 @@ interface TaskCardProps {
   task: Task;
   onDelete: (id: number) => void;
   onToggle: (id: number) => void;
+  onEdit: (task: Task) => void;
 }
 
-export default function TaskCard({ task, onDelete, onToggle }: TaskCardProps) {
+export default function TaskCard({ task, onDelete, onToggle, onEdit }: TaskCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -51,6 +52,12 @@ export default function TaskCard({ task, onDelete, onToggle }: TaskCardProps) {
           className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm font-medium"
         >
           {task.status === 'completed' ? 'Mark Pending' : 'Mark Complete'}
+        </button>
+        <button
+          onClick={() => onEdit(task)}
+          className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded hover:bg-amber-200 transition text-sm font-medium"
+        >
+          Edit
         </button>
         <button
           onClick={() => onDelete(task.id)}
