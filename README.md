@@ -85,40 +85,40 @@ This Task Management System demonstrates **modern full-stack web development bes
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     LOGIN/REGISTRATION                       │
+│                     LOGIN/REGISTRATION                      │
 ├─────────────────────────────────────────────────────────────┤
 │  1. User enters email & password                            │
 │  2. Frontend sends to /auth/register or /auth/login         │
-│  3. Backend validates and generates JWT tokens:            │
-│     ├─ Access Token (15m) - Sensitive, short-lived         │
-│     └─ Refresh Token (7d) - Less sensitive, long-lived     │
-│  4. Backend sets refreshToken as HttpOnly cookie:          │
-│     ├─ httpOnly: true (JavaScript cannot access)           │
-│     ├─ secure: true (HTTPS only in production)             │
-│     ├─ sameSite: 'strict' (CSRF protection)                │
+│  3. Backend validates and generates JWT tokens:             │
+│     ├─ Access Token (15m) - Sensitive, short-lived          │
+│     └─ Refresh Token (7d) - Less sensitive, long-lived      │
+│  4. Backend sets refreshToken as HttpOnly cookie:           │
+│     ├─ httpOnly: true (JavaScript cannot access)            │
+│     ├─ secure: true (HTTPS only in production)              │
+│     ├─ sameSite: 'strict' (CSRF protection)                 │ 
 │     └─ maxAge: 7 days                                       │
 │  5. Frontend stores accessToken in localStorage             │
 │  6. Frontend saves user state and redirects to dashboard    │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│              AUTHENTICATED API REQUESTS                      │
+│              AUTHENTICATED API REQUESTS                     │
 ├─────────────────────────────────────────────────────────────┤
-│  1. Frontend includes Authorization header:                │
-│     Authorization: Bearer <accessToken>                    │
-│  2. Browser auto-includes refreshToken cookie              │
-│  3. Backend middleware verifies JWT token                  │
-│  4. Request processed with userId from token payload       │
-│  5. Response returned with task data                       │
+│  1. Frontend includes Authorization header:                 │
+│     Authorization: Bearer <accessToken>                     │
+│  2. Browser auto-includes refreshToken cookie               │
+│  3. Backend middleware verifies JWT token                   │
+│  4. Request processed with userId from token payload        │ 
+│  5. Response returned with task data                        │
 │                                                             │
-│  ⚠️ If access token expired (401 response):                 │
-│  1. Frontend interceptor detects 401                       │
-│  2. Frontend calls POST /auth/refresh                      │
-│  3. Backend validates refreshToken cookie                  │
-│  4. Backend generates new access token                     │
-│  5. Frontend updates localStorage with new token           │
-│  6. Original request retried with new token                │
-│  7. User experiences no interruption (silent refresh)      │
+│  ⚠️ If access token expired (401 response):                │
+│  1. Frontend interceptor detects 401                        │
+│  2. Frontend calls POST /auth/refresh                       │
+│  3. Backend validates refreshToken cookie                   │
+│  4. Backend generates new access token                      │
+│  5. Frontend updates localStorage with new token            │
+│  6. Original request retried with new token                 │
+│  7. User experiences no interruption (silent refresh)       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
