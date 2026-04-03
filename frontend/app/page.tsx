@@ -2,7 +2,7 @@
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-800">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-r from-blue-600 to-blue-800">
       <div className="text-center">
         <h1 className="text-5xl font-bold text-white mb-4">Task Management System</h1>
         <p className="text-xl text-blue-100 mb-8">Organize and manage your tasks efficiently</p>
