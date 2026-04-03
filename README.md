@@ -94,8 +94,7 @@ This Task Management System demonstrates **modern full-stack web development bes
 │     └─ Refresh Token (7d) - Less sensitive, long-lived      │
 │  4. Backend sets refreshToken as HttpOnly cookie:           │
 │     ├─ httpOnly: true (JavaScript cannot access)            │
-│     ├─ secure: true (HTTPS only in production)              │
-│     ├─ sameSite: 'strict' (CSRF protection)                 │ 
+│     ├─ secure: true (HTTPS only in production)              │ 
 │     └─ maxAge: 7 days                                       │
 │  5. Frontend stores accessToken in localStorage             │
 │  6. Frontend saves user state and redirects to dashboard    │
